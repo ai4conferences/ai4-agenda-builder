@@ -1,0 +1,25 @@
+name = "ai4-agenda-builder"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# Notes:
+#  - COMMUNITY_ID and EVENT_ID are hardcoded near the top of worker.js
+#    (not read from env vars). Update them there if this is ever pointed
+#    at a different Swapcard community/event.
+#  - The worker uses the Cache API (no KV / cron needed).
+
+# — Staging environment ————————————————————————————————
+[env.staging]
+name = "ai4-agenda-builder-staging"
+
+# Secrets — set via CLI, never commit to git:
+#   wrangler secret put SWAPCARD_API_KEY --env staging
+#   wrangler secret put ANTHROPIC_API_KEY --env staging
+
+# — Production environment ————————————————————————————————
+[env.production]
+name = "ai4-agenda-builder"
+
+# Secrets — set via CLI, never commit to git:
+#   wrangler secret put SWAPCARD_API_KEY --env production
+#   wrangler secret put ANTHROPIC_API_KEY --env production
