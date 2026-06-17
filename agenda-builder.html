@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -290,17 +291,18 @@ async function submitProfile(){
   await generateAgenda()
 }
 
-function buildSessionsJson(){return JSON.stringify(SESSIONS.map(s=>({title:s.title,time:`${s.start} – ${s.end}`,type:s.type,track:s.track,desc:s.desc?s.desc.substring(0,200):'',swapcard_url:s.swapcard_url||''})))}
+function buildSessionsJson(){return JSON.stringify(SESSIONS.filter(s=>!s.start||!s.start.startsWith('8/2')).map(s=>({title:s.title,time:`${s.start} – ${s.end}`,type:s.type,track:s.track,desc:s.desc?s.desc.substring(0,200):'',swapcard_url:s.swapcard_url||''})))}
 
 function buildSystemPrompt(sj){
 return `You are the official Ai4 2026 conference agenda assistant. Ai4 2026 runs August 3-6 at The Venetian in Las Vegas.
 
-CRITICAL DATE MAPPING:
-- Monday, August 3rd = Pre-conference day
-- Tuesday, August 4th = Main conference Day 1
-- Wednesday, August 5th = Main conference Day 2
-- Thursday, August 6th = Main conference Day 3
-Always write full day name with th/rd suffix.
+CRITICAL DATE MAPPING — use EXACTLY these day names, no others:
+- ## Monday, August 3rd — Pre-conference day (MONDAY, not Sunday)
+- ## Tuesday, August 4th — Main conference Day 1
+- ## Wednesday, August 5th — Main conference Day 2
+- ## Thursday, August 6th — Main conference Day 3
+
+IMPORTANT: There is NO Sunday in this agenda. August 3rd is MONDAY. Never write the word "Sunday" anywhere in your response. The earliest day is Monday, August 3rd.
 
 RULES:
 - ONLY recommend sessions from the provided data. Never invent sessions.
