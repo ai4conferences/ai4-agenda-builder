@@ -38,8 +38,7 @@ const FIELD_IDS = {
 };
 
 // Anthropic config
-const PRIMARY_MODEL = 'claude-sonnet-4-5';
-const FALLBACK_MODEL = 'claude-haiku-4-5';
+const PRIMARY_MODEL = 'claude-haiku-4-5-20251001';
 const MAX_RETRIES = 3;
 
 const CORS_ALLOWED_ORIGINS = [
@@ -49,7 +48,8 @@ const CORS_ALLOWED_ORIGINS = [
   'http://localhost:3000',
 ];
 
-const SESSION_CACHE_TTL = 60 * 60; // 1 hour in seconds
+const SESSION_CACHE_TTL = 60 * 60;    // 1 hour in seconds
+const AGENDA_CACHE_TTL  = 24 * 60 * 60; // 24 hours in seconds
 
 // ══════════════════════════════════════════
 //  SWAPCARD SESSION FETCHING
@@ -295,33 +295,37 @@ async function callAnthropic(body, apiKey) {
 }
 
 async function callWithResilience(body, apiKey) {
-  // Phase 1: Primary model with retries
   body.model = PRIMARY_MODEL;
   let lastResponse;
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     lastResponse = await callAnthropic(body, apiKey);
-    if (lastResponse.status !== 529 && lastResponse.status !== 503) {
+    if (lastResponse.status !== 529 && lastResponse.status !== 503 && lastResponse.status !== 429) {
       return lastResponse;
     }
     if (attempt < MAX_RETRIES - 1) {
       await sleep(1000 * Math.pow(2, attempt));
     }
   }
-
-  // Phase 2: Fallback to Haiku
-  console.log('Primary model overloaded, falling back to Haiku');
-  body.model = FALLBACK_MODEL;
-  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    lastResponse = await callAnthropic(body, apiKey);
-    if (lastResponse.status !== 529 && lastResponse.status !== 503) {
-      return lastResponse;
-    }
-    if (attempt < MAX_RETRIES - 1) {
-      await sleep(1000 * Math.pow(2, attempt));
-    }
-  }
-
   return lastResponse;
+}
+
+
+// ══════════════════════════════════════════
+//  AGENDA CACHE HELPERS
+// ══════════════════════════════════════════
+
+// Hash only the user messages (not the system prompt) so that two users
+// with identical answers always hit the same cache entry, regardless of
+// any system prompt changes.
+async function hashUserMessages(messages) {
+  const userContent = JSON.stringify(
+    messages.filter(m => m.role === 'user').map(m => m.content)
+  );
+  const encoded = new TextEncoder().encode(userContent);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', encoded);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
 }
 
 
@@ -373,7 +377,7 @@ export default {
 
     // ── Route: POST / (Anthropic proxy) ──
     if (request.method === 'POST') {
-      return handleAnthropicProxy(request, env, corsHeaders);
+      return handleAnthropicProxy(request, env, ctx, corsHeaders);
     }
 
     return new Response(JSON.stringify({ error: 'Not found' }), {
@@ -451,7 +455,7 @@ async function handleGetSessions(request, env, ctx, corsHeaders) {
 
 
 // ── Handler: POST / (Anthropic proxy) ──
-async function handleAnthropicProxy(request, env, corsHeaders) {
+async function handleAnthropicProxy(request, env, ctx, corsHeaders) {
   try {
     const body = await request.json();
 
@@ -464,12 +468,39 @@ async function handleAnthropicProxy(request, env, corsHeaders) {
 
     body.max_tokens = Math.min(body.max_tokens || 8000, 8000);
 
+    // ── Agenda cache: check for an identical set of user answers ──
+    const cache = caches.default;
+    const answerHash = await hashUserMessages(body.messages);
+    const agendaCacheKey = new Request(
+      `https://agenda-cache.ai4.internal/agenda/${answerHash}`,
+      { method: 'GET' }
+    );
+
+    const cachedAgenda = await cache.match(agendaCacheKey);
+    if (cachedAgenda) {
+      const cachedBody = await cachedAgenda.text();
+      return new Response(cachedBody, {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json', 'X-Agenda-Cache': 'HIT' },
+      });
+    }
+
+    // ── Cache miss: call Claude ──
     const anthropicResponse = await callWithResilience(body, env.ANTHROPIC_API_KEY);
     const result = await anthropicResponse.text();
 
+    // Only cache successful responses
+    if (anthropicResponse.status === 200) {
+      ctx.waitUntil(cache.put(agendaCacheKey, new Response(result, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': `public, max-age=${AGENDA_CACHE_TTL}`,
+        },
+      })));
+    }
+
     return new Response(result, {
       status: anthropicResponse.status,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'X-Agenda-Cache': 'MISS' },
     });
 
   } catch (err) {
