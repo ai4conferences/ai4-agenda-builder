@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -306,14 +305,15 @@ IMPORTANT: There is NO Sunday in this agenda. August 3rd is MONDAY. Never write 
 
 RULES:
 - ONLY recommend sessions from the provided data. Never invent sessions.
+- START your response with this exact line, before anything else: "*To save a session: click "Open in Swapcard to bookmark →", then tap the bookmark icon on that page.*"
 - Use ## headers for each day.
 - For each day, organize into ### sections IN THIS ORDER:
-  1. "### Keynotes" — Always start each main conference day (Tues/Wed/Thu) with "8:30 AM — **Opening Keynote Presentation**" at the top. If a specific opening keynote exists, use its title and include [🔍 See Details]. If none, write "Opening Keynote Presentation TBA" with NO link. Then list other keynotes. For keynotes: just time, bold title, and [🔍 See Details] link inline. Keep compact, no descriptions.
+  1. "### Keynotes" — Always start each main conference day (Tues/Wed/Thu) with "8:30 AM — **Opening Keynote Presentation**" at the top. If a specific opening keynote exists, use its title and include [Open in Swapcard to bookmark →]. If none, write "Opening Keynote Presentation TBA" with NO link. Then list other keynotes. For keynotes: just time, bold title, and [Open in Swapcard to bookmark →] link inline. Keep compact, no descriptions.
   2. "### Morning Sessions" — Recommended sessions before 12pm.
   3. "### Afternoon Sessions" — Recommended sessions after 12pm.
 - For networking events, prefix with **NETWORKING:**. Do NOT include Lunch.
-- For Morning/Afternoon sessions include: bold title, time, type, track, brief WHY, then on its OWN NEW LINE: [🔍 See Details](SESSION_URL). Do NOT put See Details at end of description.
-- For Keynotes and Pre-Conference, keep [🔍 See Details] INLINE.
+- For Morning/Afternoon sessions include: bold title, time, type, track, brief WHY, then on its OWN NEW LINE: [Open in Swapcard to bookmark →](SESSION_URL). Do NOT put the link at end of description.
+- For Keynotes and Pre-Conference, keep [Open in Swapcard to bookmark →] INLINE.
 - Recommend 8-12 sessions (not counting keynotes/networking).
 - Always list sessions chronologically within each section.
 - Do NOT include Key Recommendations, Summary, or Tips sections.
@@ -323,8 +323,8 @@ MANDATORY NETWORKING EVENTS (always include for every attendee):
 
 ## Monday, August 3rd
 ### Pre-Conference Events
-**NETWORKING:** 1:00 PM — Hands-On AI Trainings [🔍 See Details](https://ai4.io/ai-trainings/)
-**NETWORKING:** 2:00 PM — Ai4 Leadership Summits [🔍 See Details](https://ai4.io/leadership-summits/)
+**NETWORKING:** 1:00 PM — Hands-On AI Trainings [Open in Swapcard to bookmark →](https://ai4.io/ai-trainings/)
+**NETWORKING:** 2:00 PM — Ai4 Leadership Summits [Open in Swapcard to bookmark →](https://ai4.io/leadership-summits/)
 **NETWORKING:** 5:00 PM — Kickoff Cocktail
 **NETWORKING:** 5:00 PM — Industry & Job Function Meetups
 
@@ -362,7 +362,7 @@ async function handleTweak(){
   load.style.display='flex';follow.style.display='none';
   const sj=buildSessionsJson();
   try{
-    const r=await fetch(CLAUDE_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,system:`You are the Ai4 2026 agenda assistant. Profile: ${profile.industry}, ${profile.role}, ${profile.techLevel}. ONLY use sessions from data. For each session include [🔍 See Details](swapcard_url) on its own line for Morning/Afternoon, inline for Keynotes. Use markdown. Do NOT include lunch. Always order chronologically. Data: ${sj}`,messages:conversationHistory})});
+    const r=await fetch(CLAUDE_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,system:`You are the Ai4 2026 agenda assistant. Profile: ${profile.industry}, ${profile.role}, ${profile.techLevel}. ONLY use sessions from data. For each session include [Open in Swapcard to bookmark →](swapcard_url) on its own line for Morning/Afternoon, inline for Keynotes. Use markdown. Do NOT include lunch. Always order chronologically. Data: ${sj}`,messages:conversationHistory})});
     const d=await r.json();load.style.display='none';
     if(d.content&&d.content[0]){const t=d.content[0].text;conversationHistory.push({role:'assistant',content:t});out.innerHTML=markdownToHtml(t);follow.style.display='block'}
   }catch(e){load.style.display='none';out.innerHTML+=`<p style="color:var(--danger)">Error: ${e.message}</p>`}
@@ -388,7 +388,7 @@ async function handleFreeform(){
   load.style.display='flex';
   const sj=buildSessionsJson();
   try{
-    const r=await fetch(CLAUDE_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,system:`You are the Ai4 2026 agenda assistant. ONLY reference sessions from data. For each session include [🔍 See Details](swapcard_url). Use markdown. Data: ${sj}`,messages:conversationHistory})});
+    const r=await fetch(CLAUDE_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,system:`You are the Ai4 2026 agenda assistant. ONLY reference sessions from data. For each session include [Open in Swapcard to bookmark →](swapcard_url). Use markdown. Data: ${sj}`,messages:conversationHistory})});
     const d=await r.json();load.style.display='none';
     if(d.content&&d.content[0]){const t=d.content[0].text;conversationHistory.push({role:'assistant',content:t});out.innerHTML=markdownToHtml(t)}
   }catch(e){load.style.display='none';out.innerHTML+=`<p style="color:var(--danger)">Error: ${e.message}</p>`}
