@@ -311,6 +311,7 @@ CRITICAL DATE MAPPING — use EXACTLY these day names, no others:
 IMPORTANT: There is NO Sunday in this agenda. August 3rd is MONDAY. Never write the word "Sunday" anywhere in your response. The earliest day is Monday, August 3rd.
 
 RULES:
+- ALWAYS list sessions in STRICT chronological order by start time within each section. A 5:00 PM event must never appear before a 2:00 PM event. When in doubt, sort by the hour first, then minutes.
 - ONLY recommend sessions from the provided data. Never invent sessions.
 - START your response with this exact line, before anything else: "*To save a session: click "Open in Swapcard to bookmark →", then tap the bookmark icon on that page.*"
 - Use ## headers for each day.
@@ -332,8 +333,8 @@ MANDATORY NETWORKING EVENTS (always include for every attendee):
 ### Pre-Conference Events
 **NETWORKING:** 1:00 PM — Hands-On AI Trainings [Open in Swapcard to bookmark →](https://ai4.io/ai-trainings/)
 **NETWORKING:** 2:00 PM — Ai4 Leadership Summits [Open in Swapcard to bookmark →](https://ai4.io/leadership-summits/)
-**NETWORKING:** 5:00 PM — Kickoff Cocktail
-**NETWORKING:** 5:00 PM — Industry & Job Function Meetups
+**NETWORKING:** 5:00 PM — Kickoff Cocktail [Open in Swapcard to bookmark →](https://ai4.app.swapcard.com/event/ai4-2026/planning/UGxhbm5pbmdfNDQwMDM3OQ==)
+**NETWORKING:** 5:00 PM — Industry & Job Function Meetups [Open in Swapcard to bookmark →](https://ai4.app.swapcard.com/event/ai4-2026/planning/UGxhbm5pbmdfNDQwMDM3NQ==)
 
 Main conference days Afternoon Sessions:
 - Tuesday, August 4th 5:00 PM — **NETWORKING:** Exhibit Hall Reception
@@ -413,11 +414,11 @@ function markdownToHtml(md){
   let html = md
     .replace(/^### (.+)$/gm,'<h3>$1</h3>')
     .replace(/^## (.+)$/gm,'<h2>$1</h2>')
-    .replace(/\[Open in Swapcard to bookmark →\]\(([^)]+)\)/g, function(match, url) {
+    .replace(/\[Open in Swapcard[^\]]*\]\(([^)]+)\)/g, function(match, url) {
       if(!url||url==='SESSION_URL') return '';
       return `<a class="swapcard-link" href="${url.replace(/"/g,'&quot;')}" target="_blank" rel="noopener">Open in Swapcard to bookmark →</a>`;
     })
-    .replace(/\[Open in Swapcard to bookmark →\]\(\)/g, '')
+    .replace(/\[Open in Swapcard[^\]]*\]\(\)/g, '')
     .replace(/\[🔍 See Details\]\(([^)]+)\)/g, function(match, url) {
       // Find the session title from the nearest bold text before this link
       return `<button class="add-to-agenda-btn" onclick="showPopup('${url.replace(/'/g,"\\'")}')">🔍 See Details</button>`;
