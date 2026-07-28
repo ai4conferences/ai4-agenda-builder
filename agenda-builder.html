@@ -67,6 +67,8 @@
   .agenda-output .streaming-text h2 { font-size:26px; font-family:var(--font-display); font-weight:700; margin:44px 0 16px; padding-bottom:12px; border-bottom:2px solid #673fea40; color:#8b6cf0; background:none; -webkit-text-fill-color:unset; }
   .agenda-output .streaming-text h2:first-child { margin-top:0; }
   .agenda-output .streaming-text h3 { font-size:20px; font-family:var(--font-display); font-weight:600; margin:20px 0 2px; color:#8b6cf0; }
+  .swapcard-link { display:inline-block; color:var(--accent-orange); text-decoration:none; font-size:13px; font-weight:600; margin-top:4px; }
+  .swapcard-link:hover { text-decoration:underline; }
   .add-to-agenda-btn { display:inline-flex; align-items:center; gap:4px; padding:6px 14px; margin:6px 0; background:var(--gradient); color:#fff !important; font-family:var(--font-body); font-size:13px; font-weight:600; border-radius:6px; text-decoration:none; transition:all 0.2s ease; letter-spacing:0.01em; cursor:pointer; border:none; }
   .add-to-agenda-btn:hover { filter:brightness(1.15); transform:translateY(-1px); box-shadow:0 3px 12px #673fea40; }
   .keynote-compact { line-height:1.5; }
@@ -411,6 +413,11 @@ function markdownToHtml(md){
   let html = md
     .replace(/^### (.+)$/gm,'<h3>$1</h3>')
     .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/\[Open in Swapcard to bookmark →\]\(([^)]+)\)/g, function(match, url) {
+      if(!url||url==='SESSION_URL') return '';
+      return `<a class="swapcard-link" href="${url.replace(/"/g,'&quot;')}" target="_blank" rel="noopener">Open in Swapcard to bookmark →</a>`;
+    })
+    .replace(/\[Open in Swapcard to bookmark →\]\(\)/g, '')
     .replace(/\[🔍 See Details\]\(([^)]+)\)/g, function(match, url) {
       // Find the session title from the nearest bold text before this link
       return `<button class="add-to-agenda-btn" onclick="showPopup('${url.replace(/'/g,"\\'")}')">🔍 See Details</button>`;
