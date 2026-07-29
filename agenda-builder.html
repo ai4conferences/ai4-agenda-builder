@@ -129,7 +129,7 @@
       <h2>Your Personalized Ai4 2026 Agenda</h2>
       <p class="agenda-subtitle">See below! Scroll to the very bottom if you'd like to tweak this agenda or start over.</p>
       <div class="streaming-text" id="agendaOutput"></div>
-      <div class="loading-indicator" id="loadingIndicator" style="display:none"><div class="loading-dots"><span></span><span></span><span></span></div><span>Building your personalized schedule…</span></div>
+      <div class="loading-indicator" id="loadingIndicator" style="display:none"><div class="loading-dots"><span></span><span></span><span></span></div><span>Building your personalized agenda. Please wait. This may take a minute or two.…</span></div>
     </div>
     <div class="followup-area" id="followupArea" style="display:none">
       <p>How does this look? You can tweak it or start fresh.</p>
@@ -316,7 +316,7 @@ RULES:
 - START your response with this exact line, before anything else: "*To save a session: click "Open in Swapcard to bookmark →", then tap the bookmark icon on that page.*"
 - Use ## headers for each day.
 - For each day, organize into ### sections IN THIS ORDER:
-  1. "### Keynotes" — Always start each main conference day (Tues/Wed/Thu) with "8:30 AM — **Opening Keynote Presentation**" at the top. If a specific opening keynote exists, use its title and include [Open in Swapcard to bookmark →]. If none, write "Opening Keynote Presentation TBA" with NO link. Then list other keynotes. For keynotes: just time, bold title, and [Open in Swapcard to bookmark →] link inline. Keep compact, no descriptions.
+  1. "### Keynotes" (Tue/Wed) or "### Morning Keynotes" + "### Afternoon Keynotes" (Thu only) — ALWAYS list EVERY session with type=Keynote from the session data for that day. Never skip or summarize keynotes. Include all of them. For Tue and Wed use a single "### Keynotes" section. For Thu ONLY, split into "### Morning Keynotes" (sessions before 12pm) and "### Afternoon Keynotes" (sessions 12pm and after). For keynotes: just time, bold title, and [Open in Swapcard to bookmark →] link inline. Keep compact, no descriptions.
   2. "### Morning Sessions" — Recommended sessions before 12pm.
   3. "### Afternoon Sessions" — Recommended sessions after 12pm.
 - For networking events, prefix with **NETWORKING:**. Do NOT include Lunch.
@@ -330,17 +330,18 @@ RULES:
 MANDATORY NETWORKING EVENTS (always include for every attendee):
 
 ## Monday, August 3rd
+MONDAY AUGUST 3RD IS FIXED — regardless of the attendee's survey answers, ALWAYS include EXACTLY these 4 sessions for Monday and NO others:
+
 ### Pre-Conference Events
-**NETWORKING:** 1:00 PM — Hands-On AI Trainings [Open in Swapcard to bookmark →](https://ai4.io/ai-trainings/)
-**NETWORKING:** 2:00 PM — Ai4 Leadership Summits [Open in Swapcard to bookmark →](https://ai4.io/leadership-summits/)
+**NETWORKING:** 1:00 PM — Hands-On AI Trainings [Open in Swapcard to bookmark →](https://ai4.app.swapcard.com/event/ai4-2026/planning/UGxhbm5pbmdfOTczMzc4MQ==)
+**NETWORKING:** 2:00 PM — Ai4 Leadership Summits [Open in Swapcard to bookmark →](https://ai4.app.swapcard.com/event/ai4-2026/planning/UGxhbm5pbmdfMjczODY0OQ==)
 **NETWORKING:** 5:00 PM — Kickoff Cocktail [Open in Swapcard to bookmark →](https://ai4.app.swapcard.com/event/ai4-2026/planning/UGxhbm5pbmdfNDQwMDM3OQ==)
 **NETWORKING:** 5:00 PM — Industry & Job Function Meetups [Open in Swapcard to bookmark →](https://ai4.app.swapcard.com/event/ai4-2026/planning/UGxhbm5pbmdfNDQwMDM3NQ==)
 
 Main conference days Afternoon Sessions:
-- Tuesday, August 4th 5:00 PM — **NETWORKING:** Exhibit Hall Reception
-- Wednesday, August 5th 5:00 PM — **NETWORKING:** Exhibit Hall Reception
-- Thursday, August 6th 5:00 PM — **NETWORKING:** Exhibit Hall Reception
-- Thursday, August 6th 9:00 PM — **NETWORKING:** Afterparty @ Tao
+- Tuesday, August 4th 5:00 PM — **NETWORKING:** Exhibit Hall Reception [Open in Swapcard to bookmark →](https://ai4.app.swapcard.com/event/ai4-2026/planning/UGxhbm5pbmdfMTI5ODA2MQ==)
+- Wednesday, August 5th 5:00 PM — **NETWORKING:** Exhibit Hall Reception [Open in Swapcard to bookmark →](https://ai4.app.swapcard.com/event/ai4-2026/planning/UGxhbm5pbmdfOTEwNTY3Mw==)
+- Thursday, August 6th 9:00 PM — **NETWORKING:** Afterparty @ Tao [Open in Swapcard to bookmark →](https://ai4.app.swapcard.com/event/ai4-2026/planning/UGxhbm5pbmdfODE0NjM1Ng==)
 
 Session data:
 ${sj}`}
