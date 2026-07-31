@@ -415,11 +415,11 @@ function markdownToHtml(md){
   let html = md
     .replace(/^### (.+)$/gm,'<h3>$1</h3>')
     .replace(/^## (.+)$/gm,'<h2>$1</h2>')
-    .replace(/\[Open in Swapcard[^\]]*\]\(([^)]+)\)/g, function(match, url) {
+    .replace(/\[See Details[^\]]*\]\(([^)]+)\)/g, function(match, url) {
       if(!url||url==='SESSION_URL') return '';
       return `<a class="swapcard-link" href="${url.replace(/"/g,'&quot;')}" target="_blank" rel="noopener">See Details & Bookmark</a>`;
     })
-    .replace(/\[Open in Swapcard[^\]]*\]\(\)/g, '')
+    .replace(/\[See Details[^\]]*\]\(\)/g, '')
     .replace(/\[🔍 See Details\]\(([^)]+)\)/g, function(match, url) {
       // Find the session title from the nearest bold text before this link
       return `<button class="add-to-agenda-btn" onclick="showPopup('${url.replace(/'/g,"\\'")}')">🔍 See Details</button>`;
