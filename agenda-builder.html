@@ -362,8 +362,8 @@ async function generateAgenda(){
   msg+=` Build me a personalized agenda for Ai4 2026.`;
   conversationHistory=[{role:'user',content:msg}];
   try{
-    const r=await fetch(CLAUDE_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,system:buildSystemPrompt(sj),messages:conversationHistory})});
-    const d=await r.json();load.style.display='none';
+    const r=await fetch(CLAUDE_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,system:buildSystemPrompt(sj),messages:conversationHistory})});
+    let d;try{d=await r.json();}catch{load.style.display='none';out.innerHTML='<p style="color:var(--danger)">The request timed out — please try again in a moment.</p>';return;}load.style.display='none';
     if(d.content&&d.content[0]){const t=d.content[0].text;conversationHistory.push({role:'assistant',content:t});out.innerHTML=markdownToHtml(t);follow.style.display='block'}
     else{out.innerHTML='<p style="color:var(--danger)">Something went wrong. Please try again.</p>'}
   }catch(e){load.style.display='none';out.innerHTML=`<p style="color:var(--danger)">Error: ${e.message}</p>`}
@@ -376,8 +376,8 @@ async function handleTweak(){
   load.style.display='flex';follow.style.display='none';
   const sj=buildSessionsJson();
   try{
-    const r=await fetch(CLAUDE_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,system:`You are the Ai4 2026 agenda assistant. Profile: ${profile.industry}, ${profile.role}, ${profile.techLevel}. ONLY use sessions from data. For each session include [See Details & Bookmark](swapcard_url) on its own line for Morning/Afternoon, inline for Keynotes. Use markdown. Do NOT include lunch. Always order chronologically. Data: ${sj}`,messages:conversationHistory})});
-    const d=await r.json();load.style.display='none';
+    const r=await fetch(CLAUDE_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,system:`You are the Ai4 2026 agenda assistant. Profile: ${profile.industry}, ${profile.role}, ${profile.techLevel}. ONLY use sessions from data. For each session include [See Details & Bookmark](swapcard_url) on its own line for Morning/Afternoon, inline for Keynotes. Use markdown. Do NOT include lunch. Always order chronologically. Data: ${sj}`,messages:conversationHistory})});
+    let d;try{d=await r.json();}catch{load.style.display='none';out.innerHTML='<p style="color:var(--danger)">The request timed out — please try again in a moment.</p>';return;}load.style.display='none';
     if(d.content&&d.content[0]){const t=d.content[0].text;conversationHistory.push({role:'assistant',content:t});out.innerHTML=markdownToHtml(t);follow.style.display='block'}
   }catch(e){load.style.display='none';out.innerHTML+=`<p style="color:var(--danger)">Error: ${e.message}</p>`}
 }
@@ -402,8 +402,8 @@ async function handleFreeform(){
   load.style.display='flex';
   const sj=buildSessionsJson();
   try{
-    const r=await fetch(CLAUDE_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,system:`You are the Ai4 2026 agenda assistant. ONLY reference sessions from data. For each session include [See Details & Bookmark](swapcard_url). Use markdown. Data: ${sj}`,messages:conversationHistory})});
-    const d=await r.json();load.style.display='none';
+    const r=await fetch(CLAUDE_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,system:`You are the Ai4 2026 agenda assistant. ONLY reference sessions from data. For each session include [See Details & Bookmark](swapcard_url). Use markdown. Data: ${sj}`,messages:conversationHistory})});
+    let d;try{d=await r.json();}catch{load.style.display='none';out.innerHTML='<p style="color:var(--danger)">The request timed out — please try again in a moment.</p>';return;}load.style.display='none';
     if(d.content&&d.content[0]){const t=d.content[0].text;conversationHistory.push({role:'assistant',content:t});out.innerHTML=markdownToHtml(t)}
   }catch(e){load.style.display='none';out.innerHTML+=`<p style="color:var(--danger)">Error: ${e.message}</p>`}
 }
