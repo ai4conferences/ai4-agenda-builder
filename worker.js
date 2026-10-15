@@ -20,6 +20,8 @@
 //
 // ══════════════════════════════════════════════════════════════
 
+import { isSiteRequest, handleSite, withSlugs } from './seo.js';
+
 // ── Configuration ──
 const SWAPCARD_GRAPHQL_URL = 'https://developer.swapcard.com/graphql';
 const COMMUNITY_ID = 'Q29tbXVuaXR5XzExODYw';
@@ -42,6 +44,8 @@ const PRIMARY_MODEL = 'claude-haiku-4-5-20251001';
 const MAX_RETRIES = 3;
 
 const CORS_ALLOWED_ORIGINS = [
+  'https://ai4.com',
+  'https://www.ai4.com',
   'https://ai4.io',
   'https://www.ai4.io',
   'http://localhost',
@@ -104,6 +108,10 @@ query FetchSessions($communityId: ID!, $filter: EventPlanningFilterInput, $curso
         lastName
         jobTitle
         organization
+      }
+      exhibitors {
+        id
+        name
       }
     }
   }
@@ -276,6 +284,73 @@ function transformSessions(rawSessions) {
 }
 
 
+// Fuller session records for the server-rendered pages (seo.js). Kept
+// separate from transformSessions() so the /sessions payload the builder
+// sends to Claude doesn't grow.
+function transformSessionsFull(rawSessions) {
+  return rawSessions
+    .filter(s => s.title && s.beginsAt)
+    .map(s => {
+      const fields = s.fields || [];
+      const v = id => getFieldValue(fields, id);
+      const trackSlug = v(FIELD_IDS.allTracks) || v(FIELD_IDS.keynotesMeals) || v(FIELD_IDS.industryTracks) || v(FIELD_IDS.jobFunctionTracks) || v(FIELD_IDS.aiTransformationTracks) || v(FIELD_IDS.specialInterestTracks) || v(FIELD_IDS.technicalTracks) || '';
+      const out = {
+        id: s.id,
+        swapcard_url: `https://ai4.app.swapcard.com/event/ai4-2026/planning/${s.id}`,
+        title: s.title,
+        description: s.description || '',
+        beginsAt: s.beginsAt,
+        endsAt: s.endsAt || null,
+        place: s.place || '',
+        type: slugToReadable(v(FIELD_IDS.type)),
+        track: slugToReadable(trackSlug),
+        speakers: (s.speakers || []).map(sp => ({
+          name: `${sp.firstName || ''} ${sp.lastName || ''}`.trim(),
+          jobTitle: sp.jobTitle || '',
+          organization: sp.organization || '',
+        })).filter(sp => sp.name),
+        exhibitors: (s.exhibitors || []).filter(x => x && x.id).map(x => ({ id: x.id, name: x.name || '' })),
+      };
+      const extra = { industry: FIELD_IDS.industryTracks, function: FIELD_IDS.jobFunctionTracks, ai_track: FIELD_IDS.aiTransformationTracks, tech_track: FIELD_IDS.technicalTracks, special: FIELD_IDS.specialInterestTracks, keynote: FIELD_IDS.keynotesMeals };
+      for (const [k, id] of Object.entries(extra)) if (v(id)) out[k] = slugToReadable(v(id));
+      return out;
+    });
+}
+
+// Cache-first loader for seo.js. Stale data is served and refreshed in the
+// background; with allowCold=false a cold cache returns null (and warms in
+// the background) so a page view never waits on Swapcard.
+const AGENDA_FULL_KEY = 'https://agenda-full.ai4.internal/v1';
+const AGENDA_STALE_AFTER = 60 * 60;       // 1h
+const AGENDA_STORAGE_TTL = 24 * 60 * 60;  // 24h
+
+async function refreshAgendaFull(env) {
+  if (!env.SWAPCARD_API_KEY) throw new Error('SWAPCARD_API_KEY environment variable is not set');
+  const sessions = withSlugs(transformSessionsFull(await fetchAllSessions(env.SWAPCARD_API_KEY)));
+  const generatedAt = new Date().toISOString();
+  const body = JSON.stringify({ sessions, generatedAt });
+  await caches.default.put(new Request(AGENDA_FULL_KEY), new Response(body, {
+    headers: { 'Content-Type': 'application/json', 'Cache-Control': `public, max-age=${AGENDA_STORAGE_TTL}`, 'X-Generated-At': generatedAt },
+  }));
+  return { sessions, generatedAt };
+}
+
+async function loadAgenda(env, ctx, { allowCold = false } = {}) {
+  const cached = await caches.default.match(new Request(AGENDA_FULL_KEY));
+  if (cached) {
+    const data = await cached.json();
+    const age = (Date.now() - new Date(data.generatedAt || 0).getTime()) / 1000;
+    if (age > AGENDA_STALE_AFTER) ctx.waitUntil(refreshAgendaFull(env).catch(console.error));
+    return data;
+  }
+  if (!allowCold) {
+    ctx.waitUntil(refreshAgendaFull(env).catch(console.error));
+    return null;
+  }
+  return refreshAgendaFull(env);
+}
+
+
 // ══════════════════════════════════════════
 //  ANTHROPIC API PROXY WITH RESILIENCE
 // ══════════════════════════════════════════
@@ -352,6 +427,15 @@ function getCorsHeaders(request) {
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+
+    // Requests on the public site (ai4.com/agenda-builder*, ai4.com/sessions*)
+    // get server-rendered HTML from seo.js. Cross-origin fetch() calls (they
+    // carry an Origin header from another site) still get the API.
+    const origin = request.headers.get('Origin');
+    if (isSiteRequest(url, env) && !(origin && origin !== url.origin)) {
+      return handleSite(request, env, ctx, { loadAgenda });
+    }
+
     const corsHeaders = getCorsHeaders(request);
 
     // ── Preflight ──
