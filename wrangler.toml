@@ -19,6 +19,35 @@ name = "ai4-agenda-builder-staging"
 # — Production environment ————————————————————————————————
 [env.production]
 name = "ai4-agenda-builder"
+# Keep the API + Claude proxy on ai4-agenda-builder.<subdomain>.workers.dev.
+# Wrangler turns workers.dev OFF by default once routes are added.
+workers_dev = true
+
+# Server-rendered agenda + session pages on the public site. Paths under these
+# patterns that aren't recognised pass straight through to WordPress.
+routes = [
+  { pattern = "ai4.com/agenda-builder*", zone_name = "ai4.com" },
+  { pattern = "www.ai4.com/agenda-builder*", zone_name = "ai4.com" },
+  { pattern = "ai4.com/sessions*", zone_name = "ai4.com" },
+  { pattern = "www.ai4.com/sessions*", zone_name = "ai4.com" },
+]
+
+# Link session speakers to ai4.com/speakers/<slug>/ and sponsors to
+# ai4.com/sponsors-exhibitors/<slug>/ (Workers on the same account can't
+# fetch each other's workers.dev URLs, so these are service bindings).
+services = [
+  { binding = "SPEAKERS", service = "ai4-speakers" },
+  { binding = "SPONSORS", service = "ai4-sponsors-prod" },
+]
+
+[env.production.vars]
+SITE_HOSTS    = "ai4.com,www.ai4.com"
+SITE_ORIGIN   = "https://ai4.com"
+AGENDA_PATH   = "/agenda-builder/"
+SESSIONS_PATH = "/sessions/"
+EVENT_LABEL   = "Ai4 2026"
+# Session times from Swapcard are Las Vegas local time; August = PDT.
+VENUE_UTC_OFFSET = "-07:00"
 
 # Secrets — set via CLI, never commit to git:
 #   wrangler secret put SWAPCARD_API_KEY --env production
